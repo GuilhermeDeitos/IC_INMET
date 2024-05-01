@@ -6,7 +6,9 @@ export const actualDate: string = `${new Date().getFullYear()}-${
   (new Date().getMonth() + 1).toString().length === 1
     ? "0" + (new Date().getMonth() + 1)
     : new Date().getMonth() + 1
-}-${new Date().getDate()}`
+}-${(new Date().getDate()).toString().length === 1
+    ? "0" + new Date().getDate()
+    : new Date().getDate()}`;
  
 interface DateInputProps {
     name?: string;

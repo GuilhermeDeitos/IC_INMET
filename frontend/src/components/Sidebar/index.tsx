@@ -50,7 +50,7 @@ interface AppBarProps extends MuiAppBarProps {
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })<AppBarProps>(({ theme, open }) => ({
-  height: '7vh',
+  height: '9vh',
   transition: theme.transitions.create(["margin", "width"], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
@@ -79,9 +79,10 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 interface DrawerProps {
   selectedOptions: Options;
   setSelectedOptions: React.Dispatch<React.SetStateAction<Options>>;
+  setOptionsSelected: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function PersistentDrawerLeft({selectedOptions, setSelectedOptions}: DrawerProps) {
+export default function PersistentDrawerLeft({selectedOptions, setSelectedOptions, setOptionsSelected}: DrawerProps) {
   const theme = useTheme();
   const [open, setOpen] = React.useState(true);
 
@@ -92,11 +93,19 @@ export default function PersistentDrawerLeft({selectedOptions, setSelectedOption
     } = event;
 
     if(name === "dataInicio" || name === "dataFim"){
+      console.log(value)
       if(value > actualDate){
         Swal.fire({
           icon: "warning",
           title: "Oops...",
           text: "Data inválida!",
+        });
+        return;
+      } else if(selectedOptions.dataInicio > selectedOptions.dataFim){
+        Swal.fire({
+          icon: "warning",
+          title: "Oops...",
+          text: "Data inicial maior que a final!",
         });
         return;
       }
@@ -128,6 +137,7 @@ export default function PersistentDrawerLeft({selectedOptions, setSelectedOption
         return;
       }
     }
+    setOptionsSelected(true)
     console.log(selectedOptions);
   }
 
@@ -187,6 +197,7 @@ export default function PersistentDrawerLeft({selectedOptions, setSelectedOption
         open={open}
         sx={{
           backgroundColor: "#0F4098",
+          height: "10hv",
         }}
       >
         <Toolbar

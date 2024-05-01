@@ -5,7 +5,7 @@ import {Select} from '@mui/material';
 
 export const DrawerText = styled.h5`
     font-size: 1rem;
-    color: ${tema === 'light' ? colorPallete.light.text.primary : colorPallete.dark.text.primary};
+    color: ${colorPallete.light.text.primary};
     margin: 0;
     padding: 0 0 0 .7rem;
     font-weight: 700;

@@ -4,7 +4,7 @@ import { colorPallete, tema } from "../utils/colorsStyled";
 
 
 export const Tab = styled.span<{ isActive: boolean }>`
-    background-color: ${props => props.isActive ? 'transparent' : tema === 'light' ? colorPallete.light.button.primary : colorPallete.dark.button.primary};
+    background-color: ${props => props.isActive ? 'transparent' : colorPallete.light.button.primary};
     color: ${props => props.isActive ? colorPallete.light.button.primary : colorPallete.light.button.secondary};
 
     border: 1px solid #003775;
@@ -14,8 +14,8 @@ export const Tab = styled.span<{ isActive: boolean }>`
     transition: .5s all ease-in-out;
     &:hover {
         background-color: transparent;
-        border: 1px solid ${tema === 'light' ? colorPallete.light.button.primary : colorPallete.dark.button.primary};
-        color: ${tema === 'light' ? colorPallete.light.button.primary : colorPallete.dark.button.primary};
+        border: 1px solid ${colorPallete.light.button.primary};
+        color: ${colorPallete.light.button.primary};
     }
 };
 `;
