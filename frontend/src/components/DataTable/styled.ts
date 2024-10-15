@@ -1,9 +1,10 @@
 import styled, { css } from 'styled-components';
-import { colorPallete,tema } from "../../utils/colorsStyled";
+import { colorPallete } from "../../utils/colorsStyled";
 
-export const TableHeaderCell = styled.th<{sortable:boolean}>`
+export const TableHeaderCell = styled.th<{sortable?:boolean}>`
 	text-align: ${(props) => props.align || 'left'};
-	padding: .4rem .9rem .4rem .2rem;
+	padding: .4rem .4rem .4rem .2rem;
+	width: "100%";
 	cursor: pointer;
 	font-size: .8rem;
 	vertical-align: middle;

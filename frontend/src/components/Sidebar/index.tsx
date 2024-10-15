@@ -16,9 +16,10 @@ import MenuItem from "@mui/material/MenuItem";
 import { DrawerText, Tab, TabGroup, SelectStyled, FormControlStyled } from "./styled";
 import { PrimaryButton } from "../../style/globalComponents";
 import { DateInput, actualDate } from "./DateInput";
-import { estacoesAuto,estacoesConv } from "../../utils/estacoes";
+import { estacoesAutomaticas,estacoesManuais,estados } from "../../utils/estacoes";
 import { Options } from "../../pages/DataPage";
 import { FormGroup } from "@mui/material";
+import { EstacaoMeteorologica } from "../../utils/estacoes";
 //Codigo do drawer (MUI Material)
 const drawerWidth = 300;
 
@@ -142,43 +143,14 @@ export default function PersistentDrawerLeft({selectedOptions, setSelectedOption
   }
 
 
-  const estadosBrasil = [
-    "Todos",  
-    "Acre",
-    "Alagoas",
-    "Amapá",
-    "Amazonas",
-    "Bahia",
-    "Ceará",
-    "Distrito Federal",
-    "Espírito Santo",
-    "Goiás",
-    "Maranhão",
-    "Mato Grosso",
-    "Mato Grosso do Sul",
-    "Minas Gerais",
-    "Pará",
-    "Paraíba",
-    "Paraná",
-    "Pernambuco",
-    "Piauí",
-    "Rio de Janeiro",
-    "Rio Grande do Norte",
-    "Rio Grande do Sul",
-    "Rondônia",
-    "Roraima",
-    "Santa Catarina",
-    "São Paulo",
-    "Sergipe",
-    "Tocantins"
-  ];
-
   const frequencia = [
-    "Hora a hora",
-    "Diário",
-    "Semanal",
-    "Mensal"
+    "horario",
+    "diario",
+    "semanal",
+    "mensal"
   ]
+
+
   const handleChangeSelect = (event: SelectChangeEvent<unknown>) => {
     const {
       target: { value, name},
@@ -188,6 +160,10 @@ export default function PersistentDrawerLeft({selectedOptions, setSelectedOption
       [name]: value as string,
     });
   };
+
+  const capitalizeString = (value: string) : string => {
+    return value.charAt(0).toUpperCase() + value.slice(1);
+  }
 
 
   return (
@@ -250,17 +226,17 @@ export default function PersistentDrawerLeft({selectedOptions, setSelectedOption
           <Divider />
             
           <TabGroup>
-            <Tab isactive={selectedOptions.tipoEstacao === "automaticas"} onClick={() => setSelectedOptions(
+            <Tab isactive={selectedOptions.tipoEstacao === "automaticas" ? "check" : ""} onClick={() => setSelectedOptions(
               {
                 ...selectedOptions,
                 tipoEstacao: "automaticas"
               }
             )}>Automaticas</Tab>
-            <Tab isactive={selectedOptions.tipoEstacao === "convencionais"} onClick={
+            <Tab isactive={selectedOptions.tipoEstacao === "manuais" ? "check" : ""} onClick={
               () => setSelectedOptions({
                 ...selectedOptions,
-                tipoEstacao: "convencionais"
-              })}>Convencionais</Tab>
+                tipoEstacao: "manuais"
+              })}>Manuais</Tab>
           </TabGroup>
           <Divider />
 
@@ -276,9 +252,9 @@ export default function PersistentDrawerLeft({selectedOptions, setSelectedOption
               name="estado"
               onChange={handleChangeSelect}
             >
-              {estadosBrasil.map((estado) => (
-                <MenuItem key={estado} value={estado}>
-                  {estado}
+              {Object.entries(estados).map((estado) => (
+                <MenuItem key={estado[0]} value={estado[0]}>
+                  {estado[1]}
                 </MenuItem>
               ))}
             </SelectStyled>
@@ -296,9 +272,11 @@ export default function PersistentDrawerLeft({selectedOptions, setSelectedOption
 
               >
 
-                {(selectedOptions.tipoEstacao === "Automaticas" ? estacoesAuto : estacoesConv).map((estacao) => (
-                <MenuItem key={estacao} value={estacao}>
-                  {estacao}
+                {(selectedOptions.tipoEstacao === "automaticas" ? estacoesAutomaticas : estacoesManuais)
+                  .filter((estacao:EstacaoMeteorologica) => estacao.SG_ESTADO === selectedOptions.estado || selectedOptions.estado === 'ALL')
+                  .map((estacao:EstacaoMeteorologica) => (
+                <MenuItem key={estacao.DC_NOME} value={estacao.CD_ESTACAO}>
+                  {estacao.DC_NOME}
                 </MenuItem>
               ))}
               </SelectStyled>
@@ -316,7 +294,7 @@ export default function PersistentDrawerLeft({selectedOptions, setSelectedOption
             >
               {frequencia.map((frequencia) => (
                 <MenuItem key={frequencia} value={frequencia}>
-                  {frequencia}
+                  {capitalizeString(frequencia)}
                 </MenuItem>
               ))}
             </SelectStyled>

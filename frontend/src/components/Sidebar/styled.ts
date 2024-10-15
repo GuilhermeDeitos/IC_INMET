@@ -43,20 +43,20 @@ export const TabGroup = styled.div`
 	color: #fff;
 `;
 
-export const Tab = styled.span<{isactive: boolean}>`
-	background-color: ${props => props.isactive ? 'transparent' : '#003775'};
-	color: ${props => props.isactive ? '#003775' : '#fff'};
+export const Tab = styled.span<{isactive: string}>`
+	background-color: ${props => props.isactive === "check" ? 'transparent' : '#003775'};
+  color: ${props => props.isactive === "check" ? '#003775' : '#fff'};
+  border: 1px solid #003775;
+  border-radius: .3rem;
+  padding: .3rem 1rem;
+  cursor: pointer;
+  transition: .2s all ease-in-out;
 
-	border: 1px solid #003775;
-	border-radius: .3rem;
-	padding: .3rem 1rem;
-	cursor: pointer;
-	transition: .2s all ease-in-out;
-	&:hover {
-		background-color: transparent;
-		border: 1px solid #003775;
-		color: #003775;
-	}
+  &:hover {
+    background-color: transparent;
+    border: 1px solid #003775;
+    color: #003775;
+  }
 
 `;
 
