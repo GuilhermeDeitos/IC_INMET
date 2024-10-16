@@ -40,7 +40,7 @@ export const TableCell = styled.td`
     border: 1px solid #cdcdcd;
 `;
 
-export const TableFooter = styled.tfoot`
+export const TableFooter = styled.div`
 	width: 99%;
 	padding: 0 .4rem;
     margin-top: 1rem;

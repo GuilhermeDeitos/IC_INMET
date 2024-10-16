@@ -24,8 +24,9 @@ interface DataTableInterface {
   data: APIDataInterface[];
   date?: string;
   optionsData: Options;
+  isLoading?: boolean;
 }
-interface Header {
+export interface Header {
   Nome: string;
   UF: string;
   "Data Medição": string;
@@ -146,7 +147,7 @@ function createHeaderConfig(rows: Header[]): { [key: string]: string[] } {
 }
 
 
-export function DataTable({ data, optionsData }: DataTableInterface) {
+export function DataTable({ data, optionsData, isLoading }: DataTableInterface) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [downloadOption, setDownloadOption] = useState(".xlsx");
@@ -174,144 +175,153 @@ export function DataTable({ data, optionsData }: DataTableInterface) {
   temp = null; // O coletor de lixo pode agora liberar essa memória, se não houver mais referências
 
   console.log(headerConfig);
-
-  return (
-    <>
-      <Paper sx={{ width: "95%" }}>
-        <HeaderTextContainer>
-          <span>
-            Download da Planilha:
-            <Select
-              value={downloadOption}
-              onChange={(e) => setDownloadOption(e.target.value)}
-              sx={{
-                marginLeft: "1rem",
-                height: "2rem",
-              }}
-            >
-              <MenuItem value=".xlsx">Excel</MenuItem>
-              <MenuItem value=".csv">CSV</MenuItem>
-              <MenuItem value=".pdf">PDF</MenuItem>
-            </Select>
-            {downloadOption === ".pdf" && (
-              <ModalPersonalizada>
-                <FormModalPDF />
-              </ModalPersonalizada>
-            )}
-            <Button
-              onClick={() => {
-                if (downloadOption === ".xlsx") {
-                  const excelExport = new ExcelExport(
-                    optionsData,
-                    rows
-                  );
-                  excelExport.onDowndloadExcel();
-                } else if (downloadOption === ".pdf") {
-                  const pdfExport = new PDFExport(optionsData, data);
-                  pdfExport.onDowndloadPDF();
-                } else if (downloadOption === ".csv") {
-                  const csvExport = new CSVExport(optionsData, rows);
-                  csvExport.onDowndloadCSV();
-                }
-              }}
-            >
-              Download
-            </Button>
-          </span>
-          <span>
-            {" "}
-            Data de referencia: {formatDate(optionsData?.dataInicio)} -{" "}
-            {formatDate(optionsData?.dataFim)}
-          </span>
-        </HeaderTextContainer>
-        <TableContainer component={Paper} sx={{ maxHeight: "450px" }}>
-          <Table sx={{ minWidth: 700 }} aria-label="customized table">
-            <TableHeader
-              columns={columns}
-              subHeaders={headerConfig}
-              frequencia={optionsData.frequencia}
-            />
-            <TableBody>
-              {rows
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => (
-                  <TableRow key={index}>
-                    {columns.map((column, index) =>
-                      headerConfig[column].map((subHeader, subIndex) => {
-                        // Verifica se a coluna é "Data Medição"
-                        if (column === "Data Medição") {
-                          const dataMediacao = row[column];
-                          // Caso a frequência seja "horário"
-                          if (optionsData.frequencia === "horario") {
+  if (!isLoading) {
+    return (
+      <>
+        <Paper sx={{ width: "95%" }}>
+          <HeaderTextContainer>
+            <span>
+              Download da Planilha:
+              <Select
+                value={downloadOption}
+                onChange={(e) => setDownloadOption(e.target.value)}
+                sx={{
+                  marginLeft: "1rem",
+                  height: "2rem",
+                }}
+              >
+                <MenuItem value=".xlsx">Excel</MenuItem>
+                <MenuItem value=".csv">CSV</MenuItem>
+                <MenuItem value=".pdf">PDF</MenuItem>
+              </Select>
+              {downloadOption === ".pdf" && (
+                <ModalPersonalizada>
+                  <FormModalPDF />
+                </ModalPersonalizada>
+              )}
+              <Button
+                onClick={() => {
+                  if (downloadOption === ".xlsx") {
+                    const excelExport = new ExcelExport(
+                      optionsData,
+                      rows
+                    );
+                    excelExport.onDowndloadExcel();
+                  } else if (downloadOption === ".pdf") {
+                    const pdfExport = new PDFExport(optionsData, data);
+                    pdfExport.onDowndloadPDF();
+                  } else if (downloadOption === ".csv") {
+                    const csvExport = new CSVExport(optionsData, rows);
+                    csvExport.onDowndloadCSV();
+                  }
+                }}
+              >
+                Download
+              </Button>
+            </span>
+            <span>
+              {" "}
+              Data de referencia: {formatDate(optionsData?.dataInicio)} -{" "}
+              {formatDate(optionsData?.dataFim)}
+            </span>
+          </HeaderTextContainer>
+          <TableContainer component={Paper} sx={{ maxHeight: "450px" }}>
+            <Table sx={{ minWidth: 700 }} aria-label="customized table">
+              <TableHeader
+                columns={columns}
+                subHeaders={headerConfig}
+                frequencia={optionsData.frequencia}
+              />
+              <TableBody>
+                {rows
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((row, index) => (
+                    <TableRow key={index}>
+                      {columns.map((column, index) =>
+                        headerConfig[column].map((subHeader, subIndex) => {
+                          // Verifica se a coluna é "Data Medição"
+                          if (column === "Data Medição") {
+                            const dataMediacao = row[column];
+                            // Caso a frequência seja "horário"
+                            if (optionsData.frequencia === "horario") {
+                              return (
+                                <TableCell key={`${index}-${subIndex}`}>
+                                  {formatDate(dataMediacao)}
+                                </TableCell>
+                              );
+                            }
+                            // Caso a frequência seja diferente de "horário"
+                            if (dataMediacao && !isLoading) {
+                              console.log(dataMediacao);
+                              const [dataInicio, dataFim] = dataMediacao.split(" ")
+                              if(dataFim === undefined) {
+                                return (
+                                  <TableCell key={`${index}-${subIndex}`}>
+                                    {formatDate(dataInicio)}
+                                  </TableCell>
+                                );
+                              }
+                              
+                              return (
+                                <TableCell key={`${index}-${subIndex}`}>
+                                  {formatDate(dataInicio)} - {formatDate(dataFim)}
+                                </TableCell>
+                              );
+                            }
+                            // Retorna célula vazia caso a data não esteja disponível
                             return (
                               <TableCell key={`${index}-${subIndex}`}>
-                                {formatDate(dataMediacao)}
+                                -
                               </TableCell>
                             );
                           }
-                          // Caso a frequência seja diferente de "horário"
-                          if (dataMediacao) {
-                            console.log(dataMediacao);
-                            const [data, hora] = dataMediacao.split(" ");
-                            return (
-                              <TableCell key={`${index}-${subIndex}`}>
-                                {formatDate(data)} - {formatDate(hora)}
-                              </TableCell>
-                            );
-                          }
-                          // Retorna célula vazia caso a data não esteja disponível
+                          // Retorna normalmente caso não seja "Data Medição"
                           return (
                             <TableCell key={`${index}-${subIndex}`}>
-                              -
+                              {subHeader ? row[column]?.[subHeader] : row[column]}
                             </TableCell>
                           );
-                        }
-                        // Retorna normalmente caso não seja "Data Medição"
-                        return (
-                          <TableCell key={`${index}-${subIndex}`}>
-                            {subHeader ? row[column]?.[subHeader] : row[column]}
-                          </TableCell>
-                        );
-                      })
-                    )}
-                  </TableRow>
-                ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                        })
+                      )}
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
 
-        <TableFooter>
-          <p>
-            Mostrando {page * rowsPerPage + 1} -{" "}
-            {page * rowsPerPage + rowsPerPage < rows.length
-              ? page * rowsPerPage + rowsPerPage
-              : rows.length}{" "}
-            de {rows.length} resultados
-          </p>
-          <div>
-            <Select
-              onChange={(e) => setRowsPerPage(Number(e.target.value))}
-              value={rowsPerPage}
-            >
-              {[5, 10, 15, 20, data.length].map((value) => (
-                <MenuItem key={value} value={value}>
-                  {value === data.length ? "Todos" : value}
-                </MenuItem>
-              ))}
-            </Select>
-            <Button onClick={() => setPage(page - 1)} disabled={page === 0}>
-              Anterior
-            </Button>
-            <Button
-              onClick={() => setPage(page + 1)}
-              disabled={page === Math.floor(rows.length / rowsPerPage)}
-            >
-              Próximo
-            </Button>
-          </div>
-        </TableFooter>
-      </Paper>
-    </>
-  );
+          <TableFooter>
+            <p>
+              Mostrando {page * rowsPerPage + 1} -{" "}
+              {page * rowsPerPage + rowsPerPage < rows.length
+                ? page * rowsPerPage + rowsPerPage
+                : rows.length}{" "}
+              de {rows.length} resultados
+            </p>
+            <div>
+              <Select
+                onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                value={rowsPerPage}
+              >
+                {[5, 10, 15, 20, data.length].map((value) => (
+                  <MenuItem key={value} value={value}>
+                    {value === data.length ? "Todos" : value}
+                  </MenuItem>
+                ))}
+              </Select>
+              <Button onClick={() => setPage(page - 1)} disabled={page === 0}>
+                Anterior
+              </Button>
+              <Button
+                onClick={() => setPage(page + 1)}
+                disabled={page === Math.floor(rows.length / rowsPerPage)}
+              >
+                Próximo
+              </Button>
+            </div>
+          </TableFooter>
+        </Paper>
+      </>
+    );
+  }
 }
 

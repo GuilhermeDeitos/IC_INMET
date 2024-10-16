@@ -2,9 +2,10 @@ import { Container } from "../../style/globalComponents";
 import { BodyContainer, FakeHeaderContainer, OverlayContainer } from "./styled";
 import { DataTable } from "../../components/DataTable";
 import Sidebar from "../../components/Sidebar";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { actualDate } from "../../components/Sidebar/DateInput";
-import { api, APIDataInterface } from "../../utils/api";
+import { APIDataInterface } from "../../utils/api";
+import {CircularIndeterminate} from "../../components/CircularIndeterminate";
 
 export type Options = {
   tipoEstacao: string;
@@ -27,40 +28,32 @@ export default function DataPage() {
     frequencia: "horario",
   });
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [data, setData] = useState<APIDataInterface[]>([]);
+  const [isSelecting, setIsSelecting] = useState<boolean>(false);
 
-  useEffect(() => {
-    try {
-      api.post("/interval/",{
-        "dataInicio": selectedOptions.dataInicio,
-        "dataFinal":selectedOptions.dataFim,
-        "codigoEstacao":selectedOptions.estacao,
-        "frequencia":selectedOptions.frequencia
-      }).then((response) => {
-        setData(response.data.data);
-      }).catch((error) => {
-        console.log(error);
-      })
-      
-    } catch (error) {
-      console.log(error);
-    }
-  },[selectedOptions]);
+
+  
   
 
   const [optionsSelected, setOptionsSelected] = useState<boolean>(false);
   console.log(selectedOptions);
+  if(isLoading) {
+    return <CircularIndeterminate />
+  }
+
   return (
     <Container>
       <BodyContainer>
         <FakeHeaderContainer />
         
 
-       {optionsSelected ? (
+       {optionsSelected && !isSelecting ? (
          <DataTable
          data={data}
          date={actualDate}
            optionsData={selectedOptions}
+           isLoading={isLoading}
        />
        ):(
           <OverlayContainer>
@@ -73,6 +66,9 @@ export default function DataPage() {
         selectedOptions={selectedOptions}
         setSelectedOptions={setSelectedOptions}
         setOptionsSelected={setOptionsSelected}
+        setData={setData}
+        setIsSelecting={setIsSelecting}
+        setIsLoading={setIsLoading}
 
       />
     </Container>

@@ -13,17 +13,26 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Swal from "sweetalert2";
 import { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import { DrawerText, Tab, TabGroup, SelectStyled, FormControlStyled } from "./styled";
+import {
+  DrawerText,
+  Tab,
+  TabGroup,
+  SelectStyled,
+  FormControlStyled,
+} from "./styled";
 import { PrimaryButton } from "../../style/globalComponents";
 import { DateInput, actualDate } from "./DateInput";
-import { estacoesAutomaticas,estacoesManuais,estados } from "../../utils/estacoes";
+import {
+  estacoesAutomaticas,
+  estacoesManuais,
+  estados,
+} from "../../utils/estacoes";
 import { Options } from "../../pages/DataPage";
 import { FormGroup } from "@mui/material";
 import { EstacaoMeteorologica } from "../../utils/estacoes";
+import { api, APIDataInterface } from "../../utils/api";
 //Codigo do drawer (MUI Material)
 const drawerWidth = 300;
-
-
 
 const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
   open?: boolean;
@@ -51,7 +60,7 @@ interface AppBarProps extends MuiAppBarProps {
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })<AppBarProps>(({ theme, open }) => ({
-  height: '9vh',
+  height: "9vh",
   transition: theme.transitions.create(["margin", "width"], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
@@ -81,28 +90,37 @@ interface DrawerProps {
   selectedOptions: Options;
   setSelectedOptions: React.Dispatch<React.SetStateAction<Options>>;
   setOptionsSelected: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsSelecting: React.Dispatch<React.SetStateAction<boolean>>;
+  setData: React.Dispatch<React.SetStateAction<APIDataInterface[]>>;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function PersistentDrawerLeft({selectedOptions, setSelectedOptions, setOptionsSelected}: DrawerProps) {
+export default function PersistentDrawerLeft({
+  selectedOptions,
+  setSelectedOptions,
+  setOptionsSelected,
+  setData,
+  setIsSelecting,
+  setIsLoading,
+}: DrawerProps) {
   const theme = useTheme();
-  const [open, setOpen] = React.useState(true);
-
+  const [open, setOpen] = React.useState(false);
 
   const handleChangeInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const {
       target: { value, name },
     } = event;
 
-    if(name === "dataInicio" || name === "dataFim"){
-      console.log(value)
-      if(value > actualDate){
+    if (name === "dataInicio" || name === "dataFim") {
+      console.log(value);
+      if (value > actualDate) {
         Swal.fire({
           icon: "warning",
           title: "Oops...",
           text: "Data inválida!",
         });
         return;
-      } else if(selectedOptions.dataInicio > selectedOptions.dataFim){
+      } else if (selectedOptions.dataInicio > selectedOptions.dataFim) {
         Swal.fire({
           icon: "warning",
           title: "Oops...",
@@ -116,8 +134,9 @@ export default function PersistentDrawerLeft({selectedOptions, setSelectedOption
       ...selectedOptions,
       [name]: value,
     });
+    setIsSelecting(true);
   };
-  
+
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -126,8 +145,11 @@ export default function PersistentDrawerLeft({selectedOptions, setSelectedOption
     setOpen(false);
   };
 
-  const handleSubmitFormDrawer = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSubmitFormDrawer = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
     event.preventDefault();
+    setIsLoading(true);
     for (const key in selectedOptions) {
       if (selectedOptions[key as keyof Options] === "") {
         Swal.fire({
@@ -135,36 +157,56 @@ export default function PersistentDrawerLeft({selectedOptions, setSelectedOption
           title: "Oops...",
           text: "Preencha todos os campos!",
         });
+        setIsLoading(false);
         return;
       }
     }
-    setOptionsSelected(true)
-    console.log(selectedOptions);
-  }
+    setOptionsSelected(true);
+    setOpen(false);
+    setIsSelecting(false);
+    
+    api.post("/interval/", {
+            dataInicio: selectedOptions.dataInicio,
+            dataFinal: selectedOptions.dataFim,
+            codigoEstacao: selectedOptions.estacao,
+            frequencia: selectedOptions.frequencia,
+          })
+          .then((response) => {
+            setData(response.data.data);
+            setIsLoading(false);
+            setOpen(!open)
+            console.log(open); // Debug
 
 
-  const frequencia = [
-    "horario",
-    "diario",
-    "semanal",
-    "mensal"
-  ]
+          })
+          .catch((error) => {
+            console.log(error);
+            setIsLoading(false);
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: "Erro ao buscar os dados!",
+            });
+          });
+      
+  };
 
+  const frequencia = ["horario", "diario", "semanal", "mensal"];
 
   const handleChangeSelect = (event: SelectChangeEvent<unknown>) => {
     const {
-      target: { value, name},
+      target: { value, name },
     } = event;
     setSelectedOptions({
       ...selectedOptions,
       [name]: value as string,
     });
+    setIsSelecting(true);
   };
 
-  const capitalizeString = (value: string) : string => {
+  const capitalizeString = (value: string): string => {
     return value.charAt(0).toUpperCase() + value.slice(1);
-  }
-
+  };
 
   return (
     <Box>
@@ -222,46 +264,60 @@ export default function PersistentDrawerLeft({selectedOptions, setSelectedOption
         </DrawerHeader>
         <form action="">
           <DrawerText>Tabela de Dados das Estações</DrawerText>
-          
+
           <Divider />
-            
+
           <TabGroup>
-            <Tab isactive={selectedOptions.tipoEstacao === "automaticas" ? "check" : ""} onClick={() => setSelectedOptions(
-              {
-                ...selectedOptions,
-                tipoEstacao: "automaticas"
+            <Tab
+              isactive={
+                selectedOptions.tipoEstacao === "automaticas" ? "check" : ""
               }
-            )}>Automaticas</Tab>
-            <Tab isactive={selectedOptions.tipoEstacao === "manuais" ? "check" : ""} onClick={
-              () => setSelectedOptions({
-                ...selectedOptions,
-                tipoEstacao: "manuais"
-              })}>Manuais</Tab>
+              onClick={() =>
+                setSelectedOptions({
+                  ...selectedOptions,
+                  tipoEstacao: "automaticas",
+                })
+              }
+            >
+              Automaticas
+            </Tab>
+            <Tab
+              isactive={
+                selectedOptions.tipoEstacao === "manuais" ? "check" : ""
+              }
+              onClick={() =>
+                setSelectedOptions({
+                  ...selectedOptions,
+                  tipoEstacao: "manuais",
+                })
+              }
+            >
+              Manuais
+            </Tab>
           </TabGroup>
           <Divider />
 
           <DrawerText>Estado</DrawerText>
-        <FormGroup>
+          <FormGroup>
+            <FormControlStyled>
+              <SelectStyled
+                labelId="estado"
+                id="estado"
+                value={selectedOptions.estado}
+                label="Estado"
+                name="estado"
+                onChange={handleChangeSelect}
+              >
+                {Object.entries(estados).map((estado) => (
+                  <MenuItem key={estado[0]} value={estado[0]}>
+                    {estado[1]}
+                  </MenuItem>
+                ))}
+              </SelectStyled>
+            </FormControlStyled>
 
-          <FormControlStyled>
-            <SelectStyled
-              labelId="estado"
-              id="estado"
-              value={selectedOptions.estado}
-              label="Estado"
-              name="estado"
-              onChange={handleChangeSelect}
-            >
-              {Object.entries(estados).map((estado) => (
-                <MenuItem key={estado[0]} value={estado[0]}>
-                  {estado[1]}
-                </MenuItem>
-              ))}
-            </SelectStyled>
-          </FormControlStyled>
-
-          <DrawerText>Estação</DrawerText>
-          <FormControlStyled>
+            <DrawerText>Estação</DrawerText>
+            <FormControlStyled>
               <SelectStyled
                 labelId="estacao"
                 id="estacao"
@@ -269,70 +325,70 @@ export default function PersistentDrawerLeft({selectedOptions, setSelectedOption
                 label="Estação"
                 name="estacao"
                 onChange={handleChangeSelect}
-
               >
-
-                {(selectedOptions.tipoEstacao === "automaticas" ? estacoesAutomaticas : estacoesManuais)
-                  .filter((estacao:EstacaoMeteorologica) => estacao.SG_ESTADO === selectedOptions.estado || selectedOptions.estado === 'ALL')
-                  .map((estacao:EstacaoMeteorologica) => (
-                <MenuItem key={estacao.DC_NOME} value={estacao.CD_ESTACAO}>
-                  {estacao.DC_NOME}
-                </MenuItem>
-              ))}
+                {(selectedOptions.tipoEstacao === "automaticas"
+                  ? estacoesAutomaticas
+                  : estacoesManuais
+                )
+                  .filter(
+                    (estacao: EstacaoMeteorologica) =>
+                      estacao.SG_ESTADO === selectedOptions.estado ||
+                      selectedOptions.estado === "ALL"
+                  )
+                  .map((estacao: EstacaoMeteorologica) => (
+                    <MenuItem key={estacao.DC_NOME} value={estacao.CD_ESTACAO}>
+                      {estacao.DC_NOME}
+                    </MenuItem>
+                  ))}
               </SelectStyled>
             </FormControlStyled>
-          
-          <DrawerText>Frequencia</DrawerText>
-          <FormControlStyled>
-            <SelectStyled
-              labelId="granuralidade"
-              id="granuralidade"
-              value={selectedOptions.frequencia}
-              label="Granuralidade"
-              name="frequencia"
-              onChange={handleChangeSelect}
-            >
-              {frequencia.map((frequencia) => (
-                <MenuItem key={frequencia} value={frequencia}>
-                  {capitalizeString(frequencia)}
-                </MenuItem>
-              ))}
-            </SelectStyled>
-          </FormControlStyled>
 
+            <DrawerText>Frequencia</DrawerText>
+            <FormControlStyled>
+              <SelectStyled
+                labelId="granuralidade"
+                id="granuralidade"
+                value={selectedOptions.frequencia}
+                label="Granuralidade"
+                name="frequencia"
+                onChange={handleChangeSelect}
+              >
+                {frequencia.map((frequencia) => (
+                  <MenuItem key={frequencia} value={frequencia}>
+                    {capitalizeString(frequencia)}
+                  </MenuItem>
+                ))}
+              </SelectStyled>
+            </FormControlStyled>
 
             <DrawerText>Data Inicial</DrawerText>
             <FormControlStyled>
-            <DateInput
-              date={selectedOptions.dataInicio}
-              handleChangeDate={handleChangeInput}
-              name="dataInicio"
-            />
-          </FormControlStyled>
-          <DrawerText>Data Final</DrawerText>
-          <FormControlStyled>
-            <DateInput
-              date={selectedOptions.dataFim}
-              handleChangeDate={handleChangeInput}
-              name="dataFim"
-            />
-          </FormControlStyled>
-          <span
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              margin: ".5rem 0",
-            }}
-          >
-            <PrimaryButton onClick={handleSubmitFormDrawer}>
-              Gerar Tabela         
-            </PrimaryButton>
-          </span>
-        </FormGroup>
-
-          
-
-         
+              <DateInput
+                date={selectedOptions.dataInicio}
+                handleChangeDate={handleChangeInput}
+                name="dataInicio"
+              />
+            </FormControlStyled>
+            <DrawerText>Data Final</DrawerText>
+            <FormControlStyled>
+              <DateInput
+                date={selectedOptions.dataFim}
+                handleChangeDate={handleChangeInput}
+                name="dataFim"
+              />
+            </FormControlStyled>
+            <span
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                margin: ".5rem 0",
+              }}
+            >
+              <PrimaryButton onClick={handleSubmitFormDrawer}>
+                Gerar Tabela
+              </PrimaryButton>
+            </span>
+          </FormGroup>
 
           <Divider />
         </form>

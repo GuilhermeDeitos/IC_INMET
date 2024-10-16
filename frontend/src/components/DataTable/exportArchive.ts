@@ -3,6 +3,7 @@ import { Options } from "../../pages/DataPage";
 import { APIDataInterface } from "../../utils/api";
 import jsPDF from "jsPDF";
 import autoTable, { FontStyle, ThemeType } from "jspdf-autotable";
+import { Header } from ".";
 
 interface TableOptions {
   fontFamily?: string;
@@ -21,11 +22,11 @@ export const formatDate = (date: string) => {
 
 };
 export class ExcelExport {
-  data: APIDataInterface[];
+  data: Header[];
   optionsData: Options;
   private formatData2Body: { [key: string]: string | number | boolean }[] = [];
 
-  constructor(optionsData: Options, data: APIDataInterface[]) {
+  constructor(optionsData: Options, data: Header[]) {
     this.data = data;
     this.optionsData = optionsData;
 
@@ -52,11 +53,11 @@ export class ExcelExport {
   };
 }
 export class CSVExport {
-  data: APIDataInterface[];
+  data: Header[];
   optionsData: Options;
   private formatData2Body: { [key: string]: string | number | boolean }[] = [];
 
-  constructor(optionsData: Options, data: APIDataInterface[]) {
+  constructor(optionsData: Options, data: Header[]) {
     this.data = data;
     this.optionsData = optionsData;
 
@@ -121,7 +122,7 @@ function flattenColumns(row: any): { [key: string]: string | number } {
 
 
 export class PDFExport {
-  data: APIDataInterface[];
+  data: Header[];
   optionsData: Options;
   columns: string[];
   tableOptions: TableOptions;
@@ -130,7 +131,7 @@ export class PDFExport {
   constructor(
     optionsData: Options,
     columns: string[],
-    data: APIDataInterface[],
+    data: Header[],
     tableOptions: TableOptions
   ) {
     this.data = data;
