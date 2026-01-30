@@ -46,8 +46,6 @@ export function setTema(isDarkMode: boolean): void {
     } else {
         tema = 'light'
     }
-
-    console.log(tema)
     localStorage.setItem('Tema',tema)
 
 }

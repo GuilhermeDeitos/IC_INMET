@@ -35,6 +35,7 @@ export interface EstacaoMeteorologica {
     DC_NOME: string;
     SG_ESTADO?: string;
 }
+
 export const estacoesAutomaticas = await api.get("automaticas/").then((response) => {
     return response.data
 })

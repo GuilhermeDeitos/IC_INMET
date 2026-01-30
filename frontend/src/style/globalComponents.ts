@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colorPallete, tema } from "../utils/colorsStyled";
+import { colorPallete } from "../utils/colorsStyled";
 
 
 

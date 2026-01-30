@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './pages/MainPage'
+import {App} from './app/App'
 import './index.css'
 
 if(!localStorage.getItem('Tema')){
