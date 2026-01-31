@@ -72,6 +72,10 @@ export function Sidebar({
     const filteredStations = filters.estado === 'ALL'
       ? stations
       : stations.filter(s => s.SG_ESTADO === filters.estado);
+    
+      if(!filteredStations.length){
+        return [{ value: '', label: 'Nenhuma estação encontrada', state: ''}];
+      }
 
     return filteredStations.map(station => ({
       value: station.CD_ESTACAO,

@@ -44,19 +44,50 @@ const IconButton = styled.button`
   }
 `;
 
-const Title = styled.h1`
-  font-size: ${theme.typography.fontSize.lg};
-  font-weight: ${theme.typography.fontWeight.semibold};
+const LogoContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing[3]};
+`;
+
+
+const LogoText = styled.h1`
+  font-size: ${theme.typography.fontSize.xl};
+  font-weight: ${theme.typography.fontWeight.bold};
   margin: 0;
+  letter-spacing: ${theme.typography.letterSpacing.tight};
   
-  span {
-    font-weight: ${theme.typography.fontWeight.normal};
-    opacity: 0.8;
+  .uni {
+    font-weight: 800;
+    color: #FFFFFF;
+  }
+  
+  .met {
+    font-weight: 300;
+    color: #38BDF8;
   }
 `;
 
 const Spacer = styled.div`
   flex: 1;
+`;
+
+const PoweredBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing[2]};
+  padding: ${theme.spacing[1]} ${theme.spacing[3]};
+  
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: ${theme.borderRadius.full};
+  
+  font-size: ${theme.typography.fontSize.xs};
+  font-weight: ${theme.typography.fontWeight.medium};
+  color: rgba(255, 255, 255, 0.8);
+  
+  span {
+    opacity: 0.6;
+  }
 `;
 
 const HeaderActions = styled.div`
@@ -80,11 +111,18 @@ export function AppBar({ onMenuClick }: AppBarProps) {
           <MenuIcon />
         </IconButton>
         
-        <Title>
-          INMET <span>— Dados Meteorológicos</span>
-        </Title>
+        <LogoContainer>
+          <LogoText>
+            <span className="uni">UNI</span>
+            <span className="met">MET</span>
+          </LogoText>
+        </LogoContainer>
         
         <Spacer />
+        
+        <PoweredBadge>
+          <span>Powered by</span> INMET Data
+        </PoweredBadge>
         
         <HeaderActions>
           <IconButton 
@@ -98,26 +136,15 @@ export function AppBar({ onMenuClick }: AppBarProps) {
           <IconButton 
             onClick={() => setHelpOpen(true)} 
             aria-label="Ajuda"
-            title="Ajuda e FAQ"
+            title="Ajuda"
           >
             <HelpIcon />
           </IconButton>
         </HeaderActions>
       </Header>
-
-      <HelpDrawer 
-        isOpen={helpOpen} 
-        onClose={() => setHelpOpen(false)}
-        onOpenAbout={() => {
-          setHelpOpen(false);
-          setAboutOpen(true);
-        }}
-      />
-
-      <AboutModal 
-        isOpen={aboutOpen}
-        onClose={() => setAboutOpen(false)}
-      />
+      
+      <HelpDrawer isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
+      <AboutModal isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
     </>
   );
 }

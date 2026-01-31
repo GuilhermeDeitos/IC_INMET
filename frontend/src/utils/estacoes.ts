@@ -37,8 +37,8 @@ export interface EstacaoMeteorologica {
 }
 
 export const estacoesAutomaticas = await api.get("automaticas/").then((response) => {
-    return response.data
+    return response.data.data
 })
 export const estacoesManuais = await api.get("manuais/").then((response) => {
-    return response.data
+    return response.data.data
 })

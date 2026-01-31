@@ -227,11 +227,12 @@ function calculateKPIs(data: TableHeader[]): KPIData {
     const tMax = extractNumericValue(temp, 'Max.', 'Max');
     const tMin = extractNumericValue(temp, 'Min.', 'Min');
     
-    if (tInst !== null) { tempSum += tInst; tempCount++; }
-    if (tMax !== null && tMax > tempMax) tempMax = tMax;
-    if (tMin !== null && tMin < tempMin) tempMin = tMin;
+    // Ignora valores 0 (dados não coletados)
+    if (tInst !== null && tInst !== 0) { tempSum += tInst; tempCount++; }
+    if (tMax !== null && tMax !== 0 && tMax > tempMax) tempMax = tMax;
+    if (tMin !== null && tMin !== 0 && tMin < tempMin) tempMin = tMin;
 
-    // Chuva
+    // Chuva - aqui 0 é válido (não choveu), então mantemos
     const rain = row['Chuva'];
     const rainValue = extractNumericValue(rain, '(mm)', 'mm');
     if (rainValue !== null) {
@@ -239,24 +240,24 @@ function calculateKPIs(data: TableHeader[]): KPIData {
       if (rainValue > 0) rainDays++;
     }
 
-    // Vento
+    // Vento - ignora valores 0
     const wind = row['Vento'];
     const windValue = extractNumericValue(wind, 'Vel. (m/s)', 'Vel.', 'Vel');
     const windRaj = extractNumericValue(wind, 'Raj. (m/s)', 'Raj.', 'Raj');
     const windDir = extractNumericValue(wind, 'Dir.', 'Dir');
     
-    if (windValue !== null) { windSum += windValue; windCount++; }
-    if (windRaj !== null && windRaj > windMax) windMax = windRaj;
-    if (windValue !== null && windValue > windMax) windMax = windValue;
-    if (windDir !== null) { windDirSum += windDir; windDirCount++; }
+    if (windValue !== null && windValue !== 0) { windSum += windValue; windCount++; }
+    if (windRaj !== null && windRaj !== 0 && windRaj > windMax) windMax = windRaj;
+    if (windValue !== null && windValue !== 0 && windValue > windMax) windMax = windValue;
+    if (windDir !== null && windDir !== 0) { windDirSum += windDir; windDirCount++; }
 
-    // Umidade
+    // Umidade - ignora valores 0
     const humidity = row['Umidade'];
     const humValue = extractNumericValue(humidity, 'Inst.', 'Med.', 'Med');
     const humMin = extractNumericValue(humidity, 'Min.', 'Min');
     
-    if (humValue !== null) { humiditySum += humValue; humidityCount++; }
-    if (humMin !== null && humMin < humidityMin) humidityMin = humMin;
+    if (humValue !== null && humValue !== 0) { humiditySum += humValue; humidityCount++; }
+    if (humMin !== null && humMin !== 0 && humMin < humidityMin) humidityMin = humMin;
   });
 
   const tempAvg = tempCount > 0 ? tempSum / tempCount : null;

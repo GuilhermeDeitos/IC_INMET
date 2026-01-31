@@ -2,10 +2,6 @@ import { createGlobalStyle } from 'styled-components';
 import { theme } from '../shared/design-system';
 
 export const GlobalStyles = createGlobalStyle`
-  /* Inter Font - Import from Google Fonts */
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
-
   *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
